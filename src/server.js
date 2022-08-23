@@ -17,6 +17,9 @@ const wsServer = SocketIO(httpServer);
 
 wsServer.on("connection", (socket) => {
     console.log(socket);
+    socket.on("enter_room", (msg) => {
+        console.log(msg.payload)
+    })
 })
 
 httpServer.listen(3000, handleListen);
