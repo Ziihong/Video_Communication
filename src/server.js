@@ -18,9 +18,14 @@ const server = http.createServer(app);
 const ws_server = new WebSocket.Server({server});
 
 
-// socket 이용하여 frontend와 실시간 소통 가능
+// socket 이용하여 front-end와 실시간 소통 가능
 // socket -> 연결된 브라우저
+// sockets에는 해당 서버와 연결된 모든 브라우저 추가
+
+const sockets = [];
 ws_server.on("connection", (socket) => {
+    sockets.push(socket);
+    socket["nickname"] = "Anony"; // nickname을 설정하지 않은 익명의 유저를 위해
     console.log("Connected to Browser");
 
     socket.on("close", ()=>{
@@ -28,10 +33,19 @@ ws_server.on("connection", (socket) => {
     })
 
     socket.on("message", (message) => {
-        console.log("browser: ", message.toString()); // message buffer 형식으로 전달됨
-    })
+        // console.log("new message: ", message.toString()); // message buffer 형식으로 전달됨
+        const parsed = JSON.parse(message);
+        switch (parsed.type){
+            case "new_message":
+                sockets.forEach((browser) => browser.send(`${socket.nickname}: ${parsed.payload}`));
+                break;
+            case "nickname":
+                socket["nickname"] = parsed.payload;
+                break;
+        }
 
-    socket.send("hello");
+    })
 });
 
 server.listen(3000, handleListen);
+
