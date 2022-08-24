@@ -16,13 +16,23 @@ const httpServer = http.createServer(app);
 const wsServer = SocketIO(httpServer);
 
 wsServer.on("connection", (socket) => {
-    console.log(socket);
+    // connect
     socket.on("enter_room", (roomName, done) => {
         socket.join(roomName); // 서로 소통할 수 있는 socket 그룹에 연결
         done();
-        socket.to(roomName).emit("new_join"); // 본인 제외한 특정 그룹에게 이벤트 발생
+        socket.to(roomName).emit("join"); // 본인 제외한 특정 그룹에게 이벤트 발생
+    });
+    socket.on("new_message", (roomName, msg, done) => {
+        socket.to(roomName).emit("new_message", msg);
+        done();
     })
-})
+
+    // disconnect
+    socket.on("disconnecting", () => {
+        // socket.rooms -> 해당 socket 그룹에 연결된 socket들을 set 데이터 형태로 저장
+        socket.rooms.forEach((room) => socket.to(room).emit("left"));
+    });
+});
 
 httpServer.listen(3000, handleListen);
 
