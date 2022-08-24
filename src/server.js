@@ -17,8 +17,11 @@ const wsServer = SocketIO(httpServer);
 
 wsServer.on("connection", (socket) => {
     console.log(socket);
-    socket.on("enter_room", (msg) => {
-        console.log(msg.payload)
+    socket.on("enter_room", (msg, done) => {
+        console.log(msg.payload);
+        setTimeout(() => {
+            done("backend call"); // front-end에 있는 함수를 back-end가 실행시킴. 보안 측면에서 중요
+        }, 5000)
     })
 })
 

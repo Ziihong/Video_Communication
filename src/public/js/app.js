@@ -4,13 +4,15 @@ const socket = io();
 const welcome = document.querySelector("#welcom");
 const form = document.querySelector("form");
 
+function serverDon(msg){
+    console.log(`backend: ${msg}`);
+}
+
 function handleRoomSubmit(event){
     event.preventDefault();
     const input = form.querySelector("input");
-    // socket.emit(event 이름, 보내고 싶은 payload-Object 전송 가능, 서버에서 호출하는 함수)
-    socket.emit("enter_room", { payload: input.value }, () => {
-        console.log("server is done!")
-    })
+    // socket.emit(event 이름, 서버로 보내고 싶은 데이터1, 2, 3,,,, 서버에서 호출하는 함수-무조건 마지막 인자)
+    socket.emit("enter_room", { payload: input.value }, serverDon);
     input.value = "";
 }
 
