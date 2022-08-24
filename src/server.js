@@ -17,11 +17,10 @@ const wsServer = SocketIO(httpServer);
 
 wsServer.on("connection", (socket) => {
     console.log(socket);
-    socket.on("enter_room", (msg, done) => {
-        console.log(msg.payload);
-        setTimeout(() => {
-            done("backend call"); // front-end에 있는 함수를 back-end가 실행시킴. 보안 측면에서 중요
-        }, 5000)
+    socket.on("enter_room", (roomName, done) => {
+        socket.join(roomName); // 서로 소통할 수 있는 socket 그룹에 연결
+        done();
+        socket.to(roomName).emit("new_join"); // 본인 제외한 특정 그룹에게 이벤트 발생
     })
 })
 
