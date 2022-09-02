@@ -15,6 +15,22 @@ const handleListen = () => console.log("Listening on localhost");
 const httpServer = http.createServer(app);
 const wsServer = SocketIO(httpServer);
 
+// adpater는 다른 서버들 사이에 실시간 어플리케이션을 동기화한다.
+// adapter는 데이터베이스를 사용해서 서버간의 통신을 한다. 어플리케이션으로 통하는 창문 역할
+
+// sids는 개인방만, rooms는 개인방, 전체방 모두 존재
+function publicRooms() {
+    const sids = wsServer.sockets.adapter.sids;
+    const rooms = wsServer.sockets.adapter.rooms;
+    const publicRooms = [];
+    rooms.forEach((_, key) => {
+        if(sids.get(key) === undefined){
+            publicRooms.push(key);
+        }
+    });
+    return publicRooms;
+}
+
 wsServer.on("connection", (socket) => {
     socket["nickname"] = "Anon";
 

@@ -41,8 +41,8 @@ function showRoom(){
     h3.innerText = `Room ❬ ${roomName} ❭`;
 
     // const nickForm = chatRoom.querySelector("#nick");
-    const msgForm = chatRoom.querySelector("#msg");
     // nickForm.addEventListener("submit", handleNicknameSubmit);
+    const msgForm = chatRoom.querySelector("#msg");
     msgForm.addEventListener("submit", handleMessageSubmit);
 }
 
