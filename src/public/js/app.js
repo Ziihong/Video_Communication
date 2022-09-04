@@ -92,10 +92,27 @@ const videoSection = document.querySelector("#videoSection");
 const myFace = videoSection.querySelector("#myFace");
 const muteBtn = videoSection.querySelector("#mute");
 const cameraBtn = videoSection.querySelector("#camera");
+const cameraSelect = videoSection.querySelector("#cameraSelect");
 
 let myStream;
 let muted = false;
 let cameraOff = false;
+
+async function getCameras(){
+    try{
+        // enumerateDevices() => 컴퓨터에 연결되어 있거나 모바일이 가지고 있는 장치의 모든 미디어 장치를 알려줌
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const cameras = devices.filter((device) => device.kind === "videoinput");
+        cameras.forEach((camera) => {
+            const option = document.createElement("option");
+            option.value = camera.deviceId;
+            option.innerText = camera.label;
+            cameraSelect.append(option);
+        })
+    }catch (e){
+        console.log(e);
+    }
+}
 
 async function getMedia() {
     try{
@@ -103,8 +120,8 @@ async function getMedia() {
             audio: true,
             video: true,
         });
-        console.log(myStream);
         myFace.srcObject = myStream;
+        await getCameras();
 
     }catch(e){
         console.log(e);
@@ -112,26 +129,30 @@ async function getMedia() {
 }
 
 function handleMuteClick(){
+    // stream은 track을 제공해줌
+    myStream.getAudioTracks().forEach((track) => track.enabled = !track.enabled);
     if(!muted){
-        muteBtn.innerText = "Mute";
+        muteBtn.innerText = "UnMute";
         muted = true;
     }else{
-        muteBtn.innerText = "Unmute";
+        muteBtn.innerText = "Mute";
         muted = false;
     }
 }
 
 function handleCameraClick(){
+    myStream.getVideoTracks().forEach((track) => track.enabled = !track.enabled);
     if(!cameraOff){
-        cameraBtn.innerText = "Turn Camera Off";
+        cameraBtn.innerText = "Turn Camera On";
         cameraOff = true;
     }else{
-        cameraBtn.innerText = "Turn Camera On";
+        cameraBtn.innerText = "Turn Camera Off";
         cameraOff = false;
     }
 }
 
 getMedia();
+
 
 muteBtn.addEventListener("click", handleMuteClick);
 cameraBtn.addEventListener("click", handleCameraClick);
