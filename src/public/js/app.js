@@ -103,10 +103,14 @@ async function getCameras(){
         // enumerateDevices() => 컴퓨터에 연결되어 있거나 모바일이 가지고 있는 장치의 모든 미디어 장치를 알려줌
         const devices = await navigator.mediaDevices.enumerateDevices();
         const cameras = devices.filter((device) => device.kind === "videoinput");
+        const currentCamera = myStream.getVideoTracks()[0];
         cameras.forEach((camera) => {
             const option = document.createElement("option");
             option.value = camera.deviceId;
             option.innerText = camera.label;
+            if(currentCamera.label === camera.label){ // 선택한 카메라로 보여질 수 있도록
+                option.selected = true;
+            }
             cameraSelect.append(option);
         })
     }catch (e){
@@ -114,12 +118,20 @@ async function getCameras(){
     }
 }
 
-async function getMedia() {
+async function getMedia(deviceId) {
+    const initialConstrains = { // deviceId 인자 없을 때. 요청한 카메라가 없을 때
+        audio: true,
+        video: { facingMode: "user"}
+    };
+    const cameraConstrains = { // deviceId 인자 있을 때. 요청한 카메라가 있을 때
+        audio: true,
+        video: {deviceId: {exact: deviceId}}
+    }
+
     try{
-        myStream = await navigator.mediaDevices.getUserMedia({
-            audio: true,
-            video: true,
-        });
+        myStream = await navigator.mediaDevices.getUserMedia(
+            deviceId ? cameraConstrains : initialConstrains
+        );
         myFace.srcObject = myStream;
         await getCameras();
 
@@ -151,9 +163,14 @@ function handleCameraClick(){
     }
 }
 
+function handleCameraChange(){
+
+}
+
 getMedia();
 
 
 muteBtn.addEventListener("click", handleMuteClick);
 cameraBtn.addEventListener("click", handleCameraClick);
+cameraSelect.addEventListener("input", handleCameraChange);
 <!-- video -->
