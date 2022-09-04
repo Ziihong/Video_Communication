@@ -1,6 +1,7 @@
 import http from "http";
-import SocketIO from "socket.io";
+import { Server } from "socket.io";
 import express from "express";
+import { instrument } from "@socket.io/admin-ui";
 
 const app = express();
 
@@ -13,7 +14,16 @@ app.get("/*", (req, res) => res.redirect("/"));
 const handleListen = () => console.log("Listening on localhost");
 
 const httpServer = http.createServer(app);
-const wsServer = SocketIO(httpServer);
+const wsServer = new Server(httpServer, {
+    cors: {
+        origin: ["https://admin.socket.io"],
+        credentials: true,
+    },
+});
+
+instrument(wsServer, {
+    auth: false,
+});
 
 // adpater는 다른 서버들 사이에 실시간 어플리케이션을 동기화한다.
 // adapter는 데이터베이스를 사용해서 서버간의 통신을 한다. 어플리케이션으로 통하는 창문 역할

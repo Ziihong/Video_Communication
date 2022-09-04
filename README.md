@@ -13,5 +13,6 @@ npm i ws
 ### Installation (SocketIO)
 ```js
 npm i socket.io
+npm i @socket.io/admin-ui
 ```
 
