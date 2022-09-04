@@ -21,6 +21,11 @@ html(lang="en")
                 ul
             div#chatRoom
                 h3
+                div#videoSection
+                    // playsinline은 모바일 브라우저가 필요로 하는 property이다.
+                    video#myFace(autoplay, playsinline, width="400", height="400")
+                    button#mute Mute
+                    button#camera Turn Camera Off
                 ul
                 form#msg
                     input(placeholder="message" required, type="text")

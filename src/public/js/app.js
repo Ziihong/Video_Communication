@@ -1,13 +1,12 @@
 // io는 자동적으로 back-end socket.io와 연결해주는 함수이다.
 const socket = io();
 
+<!-- chatting -->
 const welcome = document.querySelector("#welcome");
 const chatRoom = document.querySelector("#chatRoom");
 const roomForm = welcome.querySelector("#room");
 const nickForm = welcome.querySelector("#nick");
 const roomTitle = chatRoom.querySelector("h3");
-
-
 
 chatRoom.hidden = true;
 let roomName, nickname;
@@ -86,3 +85,54 @@ socket.on("room_change", (rooms) => {
         roomList.append(li);
     })
 });
+
+<!-- chatting -->
+<!-- video -->
+const videoSection = document.querySelector("#videoSection");
+const myFace = videoSection.querySelector("#myFace");
+const muteBtn = videoSection.querySelector("#mute");
+const cameraBtn = videoSection.querySelector("#camera");
+
+let myStream;
+let muted = false;
+let cameraOff = false;
+
+async function getMedia() {
+    try{
+        myStream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: true,
+        });
+        console.log(myStream);
+        myFace.srcObject = myStream;
+
+    }catch(e){
+        console.log(e);
+    }
+}
+
+function handleMuteClick(){
+    if(!muted){
+        muteBtn.innerText = "Mute";
+        muted = true;
+    }else{
+        muteBtn.innerText = "Unmute";
+        muted = false;
+    }
+}
+
+function handleCameraClick(){
+    if(!cameraOff){
+        cameraBtn.innerText = "Turn Camera Off";
+        cameraOff = true;
+    }else{
+        cameraBtn.innerText = "Turn Camera On";
+        cameraOff = false;
+    }
+}
+
+getMedia();
+
+muteBtn.addEventListener("click", handleMuteClick);
+cameraBtn.addEventListener("click", handleCameraClick);
+<!-- video -->
