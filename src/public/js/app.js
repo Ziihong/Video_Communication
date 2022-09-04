@@ -5,10 +5,16 @@ const welcome = document.querySelector("#welcome");
 const chatRoom = document.querySelector("#chatRoom");
 const roomForm = welcome.querySelector("#room");
 const nickForm = welcome.querySelector("#nick");
+const roomTitle = chatRoom.querySelector("h3");
+
 
 
 chatRoom.hidden = true;
 let roomName, nickname;
+
+function showRoomTitle(currentCount){
+    roomTitle.innerText = `Room ❬ ${roomName} ❭ (${currentCount})`;
+}
 
 function makeMessage(msg){
     const ul = chatRoom.querySelector("ul");
@@ -37,8 +43,7 @@ function showRoom(){
     welcome.hidden = true;
     chatRoom.hidden = false;
 
-    const h3 = chatRoom.querySelector("h3");
-    h3.innerText = `Room ❬ ${roomName} ❭`;
+    roomTitle.innerText = `Room ❬ ${roomName} ❭`;
 
     // const nickForm = chatRoom.querySelector("#nick");
     // nickForm.addEventListener("submit", handleNicknameSubmit);
@@ -57,12 +62,14 @@ function handleRoomSubmit(event){
 roomForm.addEventListener("submit", handleRoomSubmit);
 nickForm.addEventListener("submit", handleNicknameSubmit);
 
-socket.on("join", (user) => {
+socket.on("join", (user, currentCount) => {
     makeMessage(`~~" ${user} " joined~~`);
+    showRoomTitle(currentCount);
 });
 
-socket.on("left", (user) => {
+socket.on("left", (user, currentCount) => {
     makeMessage(`~~" ${user} " left~~`);
+    showRoomTitle(currentCount);
 });
 
 socket.on("new_message", makeMessage); // == socket.on("new_message", (msg) => makeMessage(msg));
