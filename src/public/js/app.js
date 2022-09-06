@@ -38,13 +38,14 @@ function handleMessageSubmit(event){
 }
 
 // chatting room 들어간 후, 영상, 음성 call 하는 함수
-function startMedia(){
+async function startMedia(){
     welcome.hidden = true;
     chatRoom.hidden = false;
 
     roomTitle.innerText = `Room ❬ ${roomName} ❭`;
 
-    getMedia();
+    await getMedia();
+    makeConnection();
 
     const msgForm = chatRoom.querySelector("#msg");
     msgForm.addEventListener("submit", handleMessageSubmit);
@@ -61,10 +62,21 @@ function handleRoomSubmit(event){
 roomForm.addEventListener("submit", handleRoomSubmit);
 nickForm.addEventListener("submit", handleNicknameSubmit);
 
-socket.on("join", (user, currentCount) => {
+socket.on("join", async (user, currentCount) => {
     makeMessage(`~~" ${user} " joined~~`);
     showRoomTitle(currentCount);
+
+// 먼저 접속: A   나중에 접속: B
+// ------ A만 실행되는 코드 ------ offer 생성하여 B에 전송
+    const offer =  await myPeerConnection.createOffer();
+    myPeerConnection.setLocalDescription(offer);
+    socket.emit("offer", offer, roomName);
 });
+
+// ------ B에서 실행되는 코드 ------ offer을 전달 받음
+socket.on("offer", (offer) => {
+    console.log(offer);
+})
 
 socket.on("left", (user, currentCount) => {
     makeMessage(`~~" ${user} " left~~`);
@@ -96,6 +108,7 @@ const cameraSelect = videoSection.querySelector("#cameraSelect");
 let myStream;
 let muted = false;
 let cameraOff = false;
+let myPeerConnection;
 
 async function getCameras(){
     try{
@@ -172,3 +185,14 @@ cameraBtn.addEventListener("click", handleCameraClick);
 cameraSelect.addEventListener("input", handleCameraChange);
 
 
+<!-- RTC Code -->
+
+// 영상, 오디오를 연결을 통해 전달(서버가 전달x) peer-to-peer 연결 안에다가 영상과 오디오를 저장해야함
+function makeConnection(){
+    // peer-to-peer 연결 생성
+    myPeerConnection = new RTCPeerConnection();
+    // 양쪽 브라우저에서 카메라와 마이크의 데이터 stream을 받아서 그것들을 연결 안에 저장함
+    myStream.getTracks().forEach((track) => {
+        myPeerConnection.addTrack(track, myStream);
+    })
+}

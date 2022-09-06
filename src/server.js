@@ -78,6 +78,10 @@ wsServer.on("connection", (socket) => {
         wsServer.sockets.emit("room_change", publicRooms());
     });
 
+    socket.on("offer", (offer, roomName) => {
+        socket.to(roomName).emit("offer", offer); // 나의 브라우저 정보를 방에 존재하는 다른 유저에게 보내줌
+    })
+
     // disconnect
     socket.on("disconnecting", () => {
         // socket.rooms -> 해당 socket 그룹에 연결된 socket들을 set 데이터 형태로 저장
