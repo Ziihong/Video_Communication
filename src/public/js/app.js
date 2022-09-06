@@ -1,7 +1,6 @@
 // io는 자동적으로 back-end socket.io와 연결해주는 함수이다.
 const socket = io();
 
-<!-- chatting -->
 const welcome = document.querySelector("#welcome");
 const chatRoom = document.querySelector("#chatRoom");
 const roomForm = welcome.querySelector("#room");
@@ -38,14 +37,15 @@ function handleMessageSubmit(event){
     input.value = "";
 }
 
-function showRoom(){
+// chatting room 들어간 후, 영상, 음성 call 하는 함수
+function startMedia(){
     welcome.hidden = true;
     chatRoom.hidden = false;
 
     roomTitle.innerText = `Room ❬ ${roomName} ❭`;
 
-    // const nickForm = chatRoom.querySelector("#nick");
-    // nickForm.addEventListener("submit", handleNicknameSubmit);
+    getMedia();
+
     const msgForm = chatRoom.querySelector("#msg");
     msgForm.addEventListener("submit", handleMessageSubmit);
 }
@@ -54,7 +54,7 @@ function handleRoomSubmit(event){
     event.preventDefault();
     roomName = welcome.querySelector("#room input").value;
     // socket.emit(event 이름, 서버로 보내고 싶은 데이터1, 2, 3,,,, 서버에서 호출하는 함수(실행x)-무조건 마지막 인자)
-    socket.emit("enter_room", roomName, showRoom);
+    socket.emit("enter_room", roomName, startMedia);
     roomName.value = "";
 }
 
@@ -86,8 +86,7 @@ socket.on("room_change", (rooms) => {
     })
 });
 
-<!-- chatting -->
-<!-- video -->
+
 const videoSection = document.querySelector("#videoSection");
 const myFace = videoSection.querySelector("#myFace");
 const muteBtn = videoSection.querySelector("#mute");
@@ -167,10 +166,9 @@ function handleCameraChange(){
 
 }
 
-getMedia();
-
 
 muteBtn.addEventListener("click", handleMuteClick);
 cameraBtn.addEventListener("click", handleCameraClick);
 cameraSelect.addEventListener("input", handleCameraChange);
-<!-- video -->
+
+

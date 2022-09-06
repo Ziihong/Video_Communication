@@ -13,6 +13,15 @@ app.get("/*", (req, res) => res.redirect("/"));
 
 const handleListen = () => console.log("Listening on localhost");
 
+
+
+// 여태까지 사용한 web socket은 다른 web socket들에게 메시지를 전달하지 않음. 나 -> 서버 -> 나 이렇게 전달 되는 형식.
+// 반면, webTRC는 peer-to-peer 형식으로 실시간 소통 가능. 영상과 오디오가 서버를 통해서 전달되는 것이 아니라, peer-peer 직접 전달됨.
+// 브라우저는 인터넷에서의 본인의 위치와 settings, configuration, 방화벽이나 라우터가 있는지 등등의 정보를 서버에 전달한다.
+// 서버는 전달받은 정보를 다른 브라우저에게 전달하여 브라우저끼리 연결된다.
+
+
+
 const httpServer = http.createServer(app);
 const wsServer = new Server(httpServer, {
     cors: {
