@@ -68,23 +68,33 @@ socket.on("join", async (user, currentCount) => {
     showRoomTitle(currentCount);
 
 // 먼저 접속: A   나중에 접속: B
-// 1. ------ A만 실행되는 코드 ------ offer 생성하여 B에 전송
+// 1. ------ A만 실행되는 코드 ------ offer 생성하여 B에게 전송
     const offer =  await myPeerConnection.createOffer();
+    console.log("sent the offer");
     myPeerConnection.setLocalDescription(offer);
     socket.emit("offer", offer, roomName);
 });
 
-// 2. ------ B에서 실행되는 코드 ------ 전달받은 offer로 나의 peer의 description을 설정
+// 2. ------ B에서 실행되는 코드 ------ 전달 받은 offer description 설정. answer 생성하여 A에게 전송
 socket.on("offer", async (offer) => {
+    console.log("received the offer");
     myPeerConnection.setRemoteDescription(offer);
     const answer = await myPeerConnection.createAnswer();
-    myPeerConnection.setLocalDescription(answer, roomName);
+    myPeerConnection.setLocalDescription(answer);
     socket.emit("answer", answer, roomName);
-})
+    console.log("sent the answer");
+});
 
-// 3. ------ A만 실행되는 코드 ------ B의 answer 전달 받음
+// 3. ------ A만 실행되는 코드 ------ 전달 받은 answer description 설정
 socket.on("answer", (answer) => {
+    console.log("received the answer");
     myPeerConnection.setRemoteDescription(answer);
+});
+
+socket.on("ice", (ice) => {
+    // 다른 브라우저로부터 전달 받은 icecandidate 추가함
+    myPeerConnection.addIceCandidate(ice);
+    console.log("received candidate");
 })
 
 socket.on("left", (user, currentCount) => {
@@ -104,7 +114,7 @@ socket.on("room_change", (rooms) => {
         const li = document.createElement("li");
         li.innerText = room;
         roomList.append(li);
-    })
+    });
 });
 
 
@@ -200,8 +210,25 @@ cameraSelect.addEventListener("input", handleCameraChange);
 function makeConnection(){
     // peer-to-peer 연결 생성
     myPeerConnection = new RTCPeerConnection();
+
+    myPeerConnection.addEventListener("icecandidate", handleIce);
+
+    myPeerConnection.addEventListener("addstream", handleAddStream);
+
     // 양쪽 브라우저에서 카메라와 마이크의 데이터 stream을 받아서 그것들을 연결 안에 저장함
     myStream.getTracks().forEach((track) => {
         myPeerConnection.addTrack(track, myStream);
     })
+}
+
+// candidate: webRTC가 원격 장치와 통신을 하기 위해 요구되는 프로토콜과 라우팅에 대해 알려줌. 여러 개의 후보군. 브라우저가 생성.
+function handleIce(data){
+    // 서버를 통해 icecandidate 다른 브라우저에게 전달
+    socket.emit("ice", data.candidate, roomName);
+    console.log("sent the candidate");
+}
+
+function handleAddStream(data){
+    const peerFace = document.querySelector("#peerFace");
+    peerFace.srcObject = data.stream;
 }
