@@ -62,9 +62,8 @@ wsServer.on("connection", (socket) => {
     });
 
     // connect
-    socket.on("enter_room", (roomName, done) => {
+    socket.on("enter_room", (roomName) => {
         socket.join(roomName); // 서로 소통할 수 있는 socket 그룹에 연결
-        done();
         socket.to(roomName).emit("join", socket.nickname, countRoom(roomName)); // 메세지를 하나의 socket에만 보냄. 본인 제외한 특정 그룹에게 이벤트 발생.
         wsServer.sockets.emit("room_change", publicRooms()); // 메시지를 모든 socket에 보냄. "disconnect" 이벤트도 동일하게.
     });
@@ -80,6 +79,10 @@ wsServer.on("connection", (socket) => {
 
     socket.on("offer", (offer, roomName) => {
         socket.to(roomName).emit("offer", offer); // 나의 브라우저 정보를 방에 존재하는 다른 유저에게 보내줌
+    })
+
+    socket.on("answer", (answer, roomName) => {
+        socket.to(roomName).emit("answer", answer);
     })
 
     // disconnect

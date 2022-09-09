@@ -38,7 +38,7 @@ function handleMessageSubmit(event){
 }
 
 // chatting room 들어간 후, 영상, 음성 call 하는 함수
-async function startMedia(){
+async function initCall(){
     welcome.hidden = true;
     chatRoom.hidden = false;
 
@@ -51,11 +51,12 @@ async function startMedia(){
     msgForm.addEventListener("submit", handleMessageSubmit);
 }
 
-function handleRoomSubmit(event){
+async function handleRoomSubmit(event){
     event.preventDefault();
     roomName = welcome.querySelector("#room input").value;
+    await initCall();
     // socket.emit(event 이름, 서버로 보내고 싶은 데이터1, 2, 3,,,, 서버에서 호출하는 함수(실행x)-무조건 마지막 인자)
-    socket.emit("enter_room", roomName, startMedia);
+    socket.emit("enter_room", roomName);
     roomName.value = "";
 }
 
@@ -67,15 +68,23 @@ socket.on("join", async (user, currentCount) => {
     showRoomTitle(currentCount);
 
 // 먼저 접속: A   나중에 접속: B
-// ------ A만 실행되는 코드 ------ offer 생성하여 B에 전송
+// 1. ------ A만 실행되는 코드 ------ offer 생성하여 B에 전송
     const offer =  await myPeerConnection.createOffer();
     myPeerConnection.setLocalDescription(offer);
     socket.emit("offer", offer, roomName);
 });
 
-// ------ B에서 실행되는 코드 ------ offer을 전달 받음
-socket.on("offer", (offer) => {
-    console.log(offer);
+// 2. ------ B에서 실행되는 코드 ------ 전달받은 offer로 나의 peer의 description을 설정
+socket.on("offer", async (offer) => {
+    myPeerConnection.setRemoteDescription(offer);
+    const answer = await myPeerConnection.createAnswer();
+    myPeerConnection.setLocalDescription(answer, roomName);
+    socket.emit("answer", answer, roomName);
+})
+
+// 3. ------ A만 실행되는 코드 ------ B의 answer 전달 받음
+socket.on("answer", (answer) => {
+    myPeerConnection.setRemoteDescription(answer);
 })
 
 socket.on("left", (user, currentCount) => {
