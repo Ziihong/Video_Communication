@@ -142,7 +142,7 @@ async function getCameras(){
             if(currentCamera.label === camera.label){ // 선택한 카메라로 보여질 수 있도록
                 option.selected = true;
             }
-            cameraSelect.append(option);
+            cameraSelect.appendChild(option);
         })
     }catch (e){
         console.log(e);
@@ -164,7 +164,7 @@ async function getMedia(deviceId) {
             deviceId ? cameraConstrains : initialConstrains
         );
         myFace.srcObject = myStream;
-        await getCameras();
+        if(!deviceId) await getCameras(); // 최초 한 번만 실행
 
     }catch(e){
         console.log(e);
@@ -219,11 +219,25 @@ cameraSelect.addEventListener("input", handleCameraChange);
 // 영상, 오디오를 연결을 통해 전달(서버가 전달x) peer-to-peer 연결 안에다가 영상과 오디오를 저장해야함
 function makeConnection(){
     // peer-to-peer 연결 생성
-    myPeerConnection = new RTCPeerConnection();
+    // 서로 다른 와이파이에 연결되어있어도 소통할 수 있으려면 stun server 필요
+    // stun server: 장치에 공용 IP 알려주는 서버
+    myPeerConnection = new RTCPeerConnection({
+        iceServers: [
+            {
+                urls: [
+                    "stun:stun.l.google.com:19302",
+                    "stun:stun1.l.google.com:19302",
+                    "stun:stun2.l.google.com:19302",
+                    "stun:stun3.l.google.com:19302",
+                    "stun:stun4.l.google.com:19302",
+                ]
+            }
+        ]
+    });
 
     myPeerConnection.addEventListener("icecandidate", handleIce);
 
-    myPeerConnection.addEventListener("addstream", handleAddStream);
+    myPeerConnection.addEventListener("track", handleTrack);
 
     // 양쪽 브라우저에서 카메라와 마이크의 데이터 stream을 받아서 그것들을 연결 안에 저장함
     myStream.getTracks().forEach((track) => {
@@ -238,7 +252,10 @@ function handleIce(data){
     console.log("sent the candidate");
 }
 
-function handleAddStream(data){
+function handleTrack(data){
     const peerFace = document.querySelector("#peerFace");
+    <!-- 아이폰 safari 기반 브라우저에서 작동x
     peerFace.srcObject = data.stream;
+    -->
+    peerFace.srcObject = data.streams[0];
 }
