@@ -157,7 +157,7 @@ async function getMedia(deviceId) {
     const cameraConstrains = { // deviceId 인자 있을 때. 요청한 카메라가 있을 때
         audio: true,
         video: {deviceId: {exact: deviceId}}
-    }
+    };
 
     try{
         myStream = await navigator.mediaDevices.getUserMedia(
@@ -194,8 +194,18 @@ function handleCameraClick(){
     }
 }
 
-function handleCameraChange(){
+async function handleCameraChange(){
+    // 카메라를 바꿀 때마다 새로운 stream 생성 필요
+    await getMedia(cameraSelect.value);
 
+    // Sender로 peer에게 보내진 media stream track을 컨트롤 가능
+    if(myPeerConnection){
+        const videoTrack = myStream.getVideoTracks()[0];
+        const videoSender = myPeerConnection
+            .getSenders()
+            .find((sender) => sender.track.kind === "video");
+        videoSender.replaceTrack(videoTrack); // 카메라 변경후 현재 나의 카메라 화면으로 변경
+    }
 }
 
 
