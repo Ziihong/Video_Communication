@@ -14,5 +14,11 @@ npm i ws
 ```js
 npm i socket.io
 npm i @socket.io/admin-ui
+
+// localtunnel -> expose localhost to the world for easy testing and sharing
+// cmd ex) lt --port 3000
+npm i -g localtunnel 
+
 ```
+
 
